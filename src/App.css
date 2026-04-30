@@ -1,0 +1,150 @@
+.app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 20px;
+  font-family: Arial, sans-serif;
+}
+
+.app-title {
+  margin-bottom: 8px;
+}
+
+.app-subtitle {
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #555;
+}
+
+.section {
+  margin-bottom: 32px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #fafafa;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.add-button,
+.delete-button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.add-button {
+  background-color: #2563eb;
+  color: white;
+}
+
+.delete-button {
+  background-color: #dc2626;
+  color: white;
+}
+
+.application-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.application-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.application-info {
+  margin-right: 12px;
+}
+
+.error-text {
+  color: #dc2626;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.application-details p {
+  margin: 6px 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-applied {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-oa {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+
+.status-interview {
+  background-color: #ffedd5;
+  color: #c2410c;
+}
+
+.status-rejected {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-offer {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.summary-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.summary-card p {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
