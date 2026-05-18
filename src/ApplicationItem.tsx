@@ -1,10 +1,4 @@
-type Application = {
-  id: number
-  company: string
-  role: string
-  date: string
-  status: string
-}
+import type { Application } from "./src"
 
 type ApplicationItemProps = {
   app: Application

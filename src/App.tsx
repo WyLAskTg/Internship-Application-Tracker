@@ -1,14 +1,14 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import ApplicationItem from './ApplicationItem'
-
+import type {Application} from './src'
 
 function App() {
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')
   const [date, setDate] = useState('')
   const [status, setStatus] = useState('Applied')
-  const [applications, setApplications] = useState<any[]>([])
+  const [applications, setApplications] = useState<Application[]>([])
   const [error, setError] = useState('')
   const [filterStatus, setFilterStatus] = useState('All')
 
@@ -32,7 +32,7 @@ function App() {
 
     setError('')
 
-    const newApplication = {
+    const newApplication: Application = {
       id: Date.now(),
       company: company,
       role: role,
