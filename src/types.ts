@@ -10,7 +10,9 @@ export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number]
 
 export type StatusFilter = ApplicationStatus | 'All'
 
-export type SortOption = 'Newest' | 'Oldest' | 'Company'
+export const SORT_OPTIONS = ['Newest', 'Oldest', 'Company', 'Deadline'] as const
+
+export type SortOption = (typeof SORT_OPTIONS)[number]
 
 export type Language = 'en' | 'zh' | 'ja' | 'fr'
 
@@ -20,4 +22,6 @@ export type Application = {
   role: string
   date: string
   status: ApplicationStatus
+  deadline: string
+  notes: string
 }

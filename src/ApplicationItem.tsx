@@ -5,6 +5,9 @@ type ApplicationItemProps = {
   onDelete: (id: number) => void
   onEdit: (app: Application) => void
   labels: {
+    date: string
+    deadline: string
+    notes: string
     edit: string
     delete: string
     statuses: Record<ApplicationStatus, string>
@@ -26,11 +29,24 @@ function ApplicationItem({
         </div>
 
         <div className="application-meta">
-          <span>{app.date}</span>
+          <span>
+            {labels.date}: {app.date}
+          </span>
+          {app.deadline && (
+            <span>
+              {labels.deadline}: {app.deadline}
+            </span>
+          )}
           <span className={`status-badge status-${app.status.toLowerCase().trim()}`}>
             {labels.statuses[app.status]}
           </span>
         </div>
+
+        {app.notes && (
+          <p className="application-notes">
+            <strong>{labels.notes}:</strong> {app.notes}
+          </p>
+        )}
       </div>
 
       <div className="item-actions">

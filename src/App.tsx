@@ -1,8 +1,16 @@
 import './App.css'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import ApplicationItem from './ApplicationItem'
 import {
+  HTML_LANG,
+  LANGUAGE_OPTIONS,
+  TRANSLATIONS,
+  type FormError,
+  type Notice,
+} from './i18n'
+import {
   APPLICATION_STATUSES,
+  SORT_OPTIONS,
   type Application,
   type ApplicationStatus,
   type Language,
@@ -13,291 +21,36 @@ import {
 const STORAGE_KEY = 'applications'
 const LANGUAGE_STORAGE_KEY = 'language'
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-const LANGUAGE_OPTIONS: Language[] = ['en', 'zh', 'ja', 'fr']
-const HTML_LANG: Record<Language, string> = {
-  en: 'en',
-  zh: 'zh-CN',
-  ja: 'ja',
-  fr: 'fr',
+const CSV_COLUMNS = ['company', 'role', 'date', 'status', 'deadline', 'notes'] as const
+
+type CsvColumn = (typeof CSV_COLUMNS)[number]
+
+const CSV_HEADERS: Record<CsvColumn, string> = {
+  company: 'company',
+  role: 'role',
+  date: 'date',
+  status: 'status',
+  deadline: 'deadline',
+  notes: 'notes',
 }
 
-type FormError = 'required' | 'date' | ''
-
-type Translation = {
-  language: string
-  languages: Record<Language, string>
-  title: string
-  subtitle: string
-  total: string
-  addApplication: string
-  editApplication: string
-  saveChanges: string
-  cancel: string
-  applicationList: string
-  shown: (count: number) => string
-  noApplicationsTitle: string
-  noApplicationsBody: string
-  edit: string
-  delete: string
-  errors: Record<Exclude<FormError, ''>, string>
-  labels: {
-    company: string
-    role: string
-    date: string
-    status: string
-    search: string
-    filterStatus: string
-    sort: string
-  }
-  placeholders: {
-    company: string
-    role: string
-    date: string
-    search: string
-  }
-  help: {
-    date: string
-  }
-  all: string
-  statuses: Record<ApplicationStatus, string>
-  sortOptions: Record<SortOption, string>
-}
-
-const TRANSLATIONS: Record<Language, Translation> = {
-  en: {
-    language: 'Language',
-    languages: {
-      en: 'English',
-      zh: 'Chinese',
-      ja: 'Japanese',
-      fr: 'French',
-    },
-    title: 'Internship Application Tracker',
-    subtitle: 'Track applications, interviews, and outcomes.',
-    total: 'Total',
-    addApplication: 'Add Application',
-    editApplication: 'Edit Application',
-    saveChanges: 'Save Changes',
-    cancel: 'Cancel',
-    applicationList: 'Application List',
-    shown: (count) => `${count} shown`,
-    noApplicationsTitle: 'No applications found',
-    noApplicationsBody: 'Add a new application or adjust your filters.',
-    edit: 'Edit',
-    delete: 'Delete',
-    errors: {
-      required: 'Please fill in all required fields.',
-      date: 'Please use the date format YYYY-MM-DD.',
-    },
-    labels: {
-      company: 'Company',
-      role: 'Role',
-      date: 'Date Applied',
-      status: 'Status',
-      search: 'Search',
-      filterStatus: 'Filter by Status',
-      sort: 'Sort',
-    },
-    placeholders: {
-      company: 'Enter company name',
-      role: 'Enter role',
-      date: 'YYYY-MM-DD',
-      search: 'Company or role',
-    },
-    help: {
-      date: 'Use YYYY-MM-DD.',
-    },
-    all: 'All',
-    statuses: {
-      Applied: 'Applied',
-      OA: 'OA',
-      Interview: 'Interview',
-      Rejected: 'Rejected',
-      Offer: 'Offer',
-    },
-    sortOptions: {
-      Newest: 'Newest',
-      Oldest: 'Oldest',
-      Company: 'Company',
-    },
-  },
-  zh: {
-    language: '语言',
-    languages: {
-      en: '英语',
-      zh: '中文',
-      ja: '日语',
-      fr: '法语',
-    },
-    title: '实习申请追踪器',
-    subtitle: '记录申请、面试和结果。',
-    total: '总计',
-    addApplication: '添加申请',
-    editApplication: '编辑申请',
-    saveChanges: '保存修改',
-    cancel: '取消',
-    applicationList: '申请列表',
-    shown: (count) => `显示 ${count} 条`,
-    noApplicationsTitle: '未找到申请',
-    noApplicationsBody: '添加新申请或调整筛选条件。',
-    edit: '编辑',
-    delete: '删除',
-    errors: {
-      required: '请填写所有必填项。',
-      date: '请使用 YYYY-MM-DD 日期格式。',
-    },
-    labels: {
-      company: '公司',
-      role: '岗位',
-      date: '申请日期',
-      status: '状态',
-      search: '搜索',
-      filterStatus: '按状态筛选',
-      sort: '排序',
-    },
-    placeholders: {
-      company: '输入公司名称',
-      role: '输入岗位',
-      date: 'YYYY-MM-DD',
-      search: '公司或岗位',
-    },
-    help: {
-      date: '请使用 YYYY-MM-DD。',
-    },
-    all: '全部',
-    statuses: {
-      Applied: '已申请',
-      OA: '在线测评',
-      Interview: '面试',
-      Rejected: '已拒绝',
-      Offer: '录用',
-    },
-    sortOptions: {
-      Newest: '最新',
-      Oldest: '最早',
-      Company: '公司',
-    },
-  },
-  ja: {
-    language: '言語',
-    languages: {
-      en: '英語',
-      zh: '中国語',
-      ja: '日本語',
-      fr: 'フランス語',
-    },
-    title: 'インターン応募トラッカー',
-    subtitle: '応募、面接、結果を記録します。',
-    total: '合計',
-    addApplication: '応募を追加',
-    editApplication: '応募を編集',
-    saveChanges: '変更を保存',
-    cancel: 'キャンセル',
-    applicationList: '応募リスト',
-    shown: (count) => `${count} 件表示`,
-    noApplicationsTitle: '応募が見つかりません',
-    noApplicationsBody: '新しい応募を追加するか、フィルターを調整してください。',
-    edit: '編集',
-    delete: '削除',
-    errors: {
-      required: '必須項目をすべて入力してください。',
-      date: '日付は YYYY-MM-DD 形式で入力してください。',
-    },
-    labels: {
-      company: '会社',
-      role: '職種',
-      date: '応募日',
-      status: 'ステータス',
-      search: '検索',
-      filterStatus: 'ステータスで絞り込み',
-      sort: '並び替え',
-    },
-    placeholders: {
-      company: '会社名を入力',
-      role: '職種を入力',
-      date: 'YYYY-MM-DD',
-      search: '会社または職種',
-    },
-    help: {
-      date: 'YYYY-MM-DD を使用してください。',
-    },
-    all: 'すべて',
-    statuses: {
-      Applied: '応募済み',
-      OA: 'オンラインテスト',
-      Interview: '面接',
-      Rejected: '不採用',
-      Offer: '内定',
-    },
-    sortOptions: {
-      Newest: '新しい順',
-      Oldest: '古い順',
-      Company: '会社名',
-    },
-  },
-  fr: {
-    language: 'Langue',
-    languages: {
-      en: 'Anglais',
-      zh: 'Chinois',
-      ja: 'Japonais',
-      fr: 'Français',
-    },
-    title: 'Suivi des candidatures de stage',
-    subtitle: 'Suivez vos candidatures, entretiens et résultats.',
-    total: 'Total',
-    addApplication: 'Ajouter une candidature',
-    editApplication: 'Modifier la candidature',
-    saveChanges: 'Enregistrer',
-    cancel: 'Annuler',
-    applicationList: 'Liste des candidatures',
-    shown: (count) => `${count} affichée${count > 1 ? 's' : ''}`,
-    noApplicationsTitle: 'Aucune candidature trouvée',
-    noApplicationsBody: 'Ajoutez une candidature ou ajustez vos filtres.',
-    edit: 'Modifier',
-    delete: 'Supprimer',
-    errors: {
-      required: 'Veuillez remplir tous les champs requis.',
-      date: 'Utilisez le format de date YYYY-MM-DD.',
-    },
-    labels: {
-      company: 'Entreprise',
-      role: 'Poste',
-      date: 'Date de candidature',
-      status: 'Statut',
-      search: 'Recherche',
-      filterStatus: 'Filtrer par statut',
-      sort: 'Trier',
-    },
-    placeholders: {
-      company: "Saisir le nom de l'entreprise",
-      role: 'Saisir le poste',
-      date: 'YYYY-MM-DD',
-      search: 'Entreprise ou poste',
-    },
-    help: {
-      date: 'Utilisez YYYY-MM-DD.',
-    },
-    all: 'Tous',
-    statuses: {
-      Applied: 'Candidature',
-      OA: 'Test en ligne',
-      Interview: 'Entretien',
-      Rejected: 'Refus',
-      Offer: 'Offre',
-    },
-    sortOptions: {
-      Newest: 'Plus récentes',
-      Oldest: 'Plus anciennes',
-      Company: 'Entreprise',
-    },
-  },
+const CSV_HEADER_ALIASES: Record<CsvColumn, string[]> = {
+  company: ['company', 'company name'],
+  role: ['role', 'position', 'job title'],
+  date: ['date', 'date applied', 'application date'],
+  status: ['status', 'application status'],
+  deadline: ['deadline', 'next step', 'next step date'],
+  notes: ['notes', 'note', 'details'],
 }
 
 function getDateTime(date: string) {
   const time = new Date(date).getTime()
 
   return Number.isNaN(time) ? 0 : time
+}
+
+function getDeadlineTime(date: string) {
+  return date ? getDateTime(date) : Number.MAX_SAFE_INTEGER
 }
 
 function isValidDateInput(value: string) {
@@ -315,6 +68,10 @@ function isValidDateInput(value: string) {
   )
 }
 
+function isValidOptionalDateInput(value: string) {
+  return !value.trim() || isValidDateInput(value.trim())
+}
+
 function isApplicationStatus(value: unknown): value is ApplicationStatus {
   return (
     typeof value === 'string' &&
@@ -328,20 +85,32 @@ function isLanguage(value: unknown): value is Language {
   )
 }
 
-function isApplication(value: unknown): value is Application {
+function normalizeApplication(value: unknown): Application | null {
   if (!value || typeof value !== 'object') {
-    return false
+    return null
   }
 
   const application = value as Record<string, unknown>
 
-  return (
-    typeof application.id === 'number' &&
-    typeof application.company === 'string' &&
-    typeof application.role === 'string' &&
-    typeof application.date === 'string' &&
-    isApplicationStatus(application.status)
-  )
+  if (
+    typeof application.id !== 'number' ||
+    typeof application.company !== 'string' ||
+    typeof application.role !== 'string' ||
+    typeof application.date !== 'string' ||
+    !isApplicationStatus(application.status)
+  ) {
+    return null
+  }
+
+  return {
+    id: application.id,
+    company: application.company,
+    role: application.role,
+    date: application.date,
+    status: application.status,
+    deadline: typeof application.deadline === 'string' ? application.deadline : '',
+    notes: typeof application.notes === 'string' ? application.notes : '',
+  }
 }
 
 function loadStoredApplications() {
@@ -355,7 +124,11 @@ function loadStoredApplications() {
     const parsedApplications: unknown = JSON.parse(savedApplications)
 
     return Array.isArray(parsedApplications)
-      ? parsedApplications.filter(isApplication)
+      ? parsedApplications.flatMap((item) => {
+          const application = normalizeApplication(item)
+
+          return application ? [application] : []
+        })
       : []
   } catch {
     return []
@@ -368,15 +141,187 @@ function loadStoredLanguage() {
   return isLanguage(savedLanguage) ? savedLanguage : 'en'
 }
 
+function escapeCsvCell(value: string) {
+  if (/[",\n\r]/.test(value)) {
+    return `"${value.replaceAll('"', '""')}"`
+  }
+
+  return value
+}
+
+function buildCsv(applications: Application[]) {
+  const rows = [
+    CSV_COLUMNS.map((column) => CSV_HEADERS[column]),
+    ...applications.map((app) => [
+      app.company,
+      app.role,
+      app.date,
+      app.status,
+      app.deadline,
+      app.notes,
+    ]),
+  ]
+
+  return rows.map((row) => row.map(escapeCsvCell).join(',')).join('\r\n')
+}
+
+function parseCsvRows(input: string) {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let insideQuotes = false
+
+  for (let index = 0; index < input.length; index += 1) {
+    const char = input[index]
+    const nextChar = input[index + 1]
+
+    if (char === '"' && insideQuotes && nextChar === '"') {
+      field += '"'
+      index += 1
+      continue
+    }
+
+    if (char === '"') {
+      insideQuotes = !insideQuotes
+      continue
+    }
+
+    if (char === ',' && !insideQuotes) {
+      row.push(field)
+      field = ''
+      continue
+    }
+
+    if ((char === '\n' || char === '\r') && !insideQuotes) {
+      if (char === '\r' && nextChar === '\n') {
+        index += 1
+      }
+
+      row.push(field)
+      rows.push(row)
+      row = []
+      field = ''
+      continue
+    }
+
+    field += char
+  }
+
+  row.push(field)
+  rows.push(row)
+
+  return rows.filter((currentRow) => currentRow.some((cell) => cell.trim()))
+}
+
+function normalizeCsvHeader(value: string) {
+  return value.trim().toLowerCase().replace(/[\s_/-]+/g, '')
+}
+
+function getColumnIndex(headers: string[], column: CsvColumn) {
+  const normalizedAliases = CSV_HEADER_ALIASES[column].map(normalizeCsvHeader)
+
+  return headers.findIndex((header) =>
+    normalizedAliases.includes(normalizeCsvHeader(header)),
+  )
+}
+
+function getStatusFromCsv(value: string): ApplicationStatus | null {
+  const normalizedValue = value.trim().toLowerCase()
+
+  if (isApplicationStatus(value.trim())) {
+    return value.trim() as ApplicationStatus
+  }
+
+  for (const translation of Object.values(TRANSLATIONS)) {
+    for (const status of APPLICATION_STATUSES) {
+      if (translation.statuses[status].toLowerCase() === normalizedValue) {
+        return status
+      }
+    }
+  }
+
+  return null
+}
+
+function parseApplicationsFromCsv(input: string) {
+  const rows = parseCsvRows(input)
+
+  if (!rows.length) {
+    return { applications: [], skipped: 0 }
+  }
+
+  const firstRow = rows[0]
+  const hasHeader =
+    getColumnIndex(firstRow, 'company') >= 0 &&
+    getColumnIndex(firstRow, 'role') >= 0 &&
+    getColumnIndex(firstRow, 'date') >= 0
+  const indexes: Record<CsvColumn, number> = hasHeader
+    ? {
+        company: getColumnIndex(firstRow, 'company'),
+        role: getColumnIndex(firstRow, 'role'),
+        date: getColumnIndex(firstRow, 'date'),
+        status: getColumnIndex(firstRow, 'status'),
+        deadline: getColumnIndex(firstRow, 'deadline'),
+        notes: getColumnIndex(firstRow, 'notes'),
+      }
+    : {
+        company: 0,
+        role: 1,
+        date: 2,
+        status: 3,
+        deadline: 4,
+        notes: 5,
+      }
+  const dataRows = hasHeader ? rows.slice(1) : rows
+  const applications: Application[] = []
+  let skipped = 0
+
+  dataRows.forEach((row, index) => {
+    const company = (row[indexes.company] ?? '').trim()
+    const role = (row[indexes.role] ?? '').trim()
+    const date = (row[indexes.date] ?? '').trim()
+    const status = getStatusFromCsv(row[indexes.status] ?? '')
+    const deadline = (row[indexes.deadline] ?? '').trim()
+    const notes = (row[indexes.notes] ?? '').trim()
+
+    if (
+      !company ||
+      !role ||
+      !date ||
+      !status ||
+      !isValidDateInput(date) ||
+      !isValidOptionalDateInput(deadline)
+    ) {
+      skipped += 1
+      return
+    }
+
+    applications.push({
+      id: Date.now() + index,
+      company,
+      role,
+      date,
+      status,
+      deadline,
+      notes,
+    })
+  })
+
+  return { applications, skipped }
+}
+
 function App() {
   const [language, setLanguage] = useState<Language>(loadStoredLanguage)
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')
   const [date, setDate] = useState('')
+  const [deadline, setDeadline] = useState('')
+  const [notes, setNotes] = useState('')
   const [status, setStatus] = useState<ApplicationStatus>('Applied')
   const [applications, setApplications] =
     useState<Application[]>(loadStoredApplications)
   const [errorKey, setErrorKey] = useState<FormError>('')
+  const [notice, setNotice] = useState<Notice | null>(null)
   const [filterStatus, setFilterStatus] = useState<StatusFilter>('All')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortOption, setSortOption] = useState<SortOption>('Newest')
@@ -396,6 +341,8 @@ function App() {
     setCompany('')
     setRole('')
     setDate('')
+    setDeadline('')
+    setNotes('')
     setStatus('Applied')
     setEditingId(null)
   }
@@ -411,7 +358,13 @@ function App() {
       return
     }
 
+    if (!isValidOptionalDateInput(deadline)) {
+      setErrorKey('deadline')
+      return
+    }
+
     setErrorKey('')
+    setNotice(null)
 
     if (editingId) {
       setApplications((currentApplications) =>
@@ -422,6 +375,8 @@ function App() {
                 company: company.trim(),
                 role: role.trim(),
                 date: date.trim(),
+                deadline: deadline.trim(),
+                notes: notes.trim(),
                 status,
               }
             : app,
@@ -436,6 +391,8 @@ function App() {
       company: company.trim(),
       role: role.trim(),
       date: date.trim(),
+      deadline: deadline.trim(),
+      notes: notes.trim(),
       status,
     }
 
@@ -448,8 +405,11 @@ function App() {
     setCompany(app.company)
     setRole(app.role)
     setDate(app.date)
+    setDeadline(app.deadline)
+    setNotes(app.notes)
     setStatus(app.status)
     setErrorKey('')
+    setNotice(null)
   }
 
   function handleDeleteApplication(idToDelete: number) {
@@ -460,6 +420,66 @@ function App() {
     if (editingId === idToDelete) {
       resetForm()
     }
+  }
+
+  function handleExportCsv() {
+    if (!applications.length) {
+      setNotice({ type: 'error', text: text.noExportData })
+      return
+    }
+
+    const csv = buildCsv(applications)
+    const blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = `internship-applications-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.append(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+    setNotice(null)
+  }
+
+  async function handleImportCsv(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ''
+
+    if (!file) {
+      return
+    }
+
+    try {
+      const contents = await file.text()
+      const result = parseApplicationsFromCsv(contents)
+
+      if (!result.applications.length) {
+        setNotice({ type: 'error', text: text.importEmpty })
+        return
+      }
+
+      setApplications((currentApplications) => [
+        ...result.applications,
+        ...currentApplications,
+      ])
+      setNotice({
+        type: 'success',
+        text: text.importSuccess(result.applications.length, result.skipped),
+      })
+    } catch {
+      setNotice({ type: 'error', text: text.importFailed })
+    }
+  }
+
+  function handleClearAll() {
+    if (!applications.length || !window.confirm(text.confirmClear)) {
+      return
+    }
+
+    setApplications([])
+    resetForm()
+    setNotice({ type: 'success', text: text.dataCleared })
   }
 
   const totalCount = applications.length
@@ -477,13 +497,18 @@ function App() {
         const matchesSearch =
           !normalizedSearchTerm ||
           app.company.toLowerCase().includes(normalizedSearchTerm) ||
-          app.role.toLowerCase().includes(normalizedSearchTerm)
+          app.role.toLowerCase().includes(normalizedSearchTerm) ||
+          app.notes.toLowerCase().includes(normalizedSearchTerm)
 
         return matchesStatus && matchesSearch
       })
       .sort((a, b) => {
         if (sortOption === 'Company') {
           return a.company.localeCompare(b.company)
+        }
+
+        if (sortOption === 'Deadline') {
+          return getDeadlineTime(a.deadline) - getDeadlineTime(b.deadline)
         }
 
         const dateDifference = getDateTime(a.date) - getDateTime(b.date)
@@ -531,6 +556,34 @@ function App() {
       </div>
 
       <div className="section">
+        <div className="section-header">
+          <h2>{text.dataTools}</h2>
+        </div>
+
+        <div className="button-row">
+          <button className="secondary-button" onClick={handleExportCsv} type="button">
+            {text.exportCsv}
+          </button>
+          <label className="secondary-button file-button" htmlFor="csv-import">
+            {text.importCsv}
+          </label>
+          <input
+            accept=".csv,text/csv"
+            className="file-input"
+            id="csv-import"
+            onChange={handleImportCsv}
+            type="file"
+          />
+          <button className="danger-outline-button" onClick={handleClearAll} type="button">
+            {text.clearAll}
+          </button>
+        </div>
+
+        <p className="field-help">{text.help.import}</p>
+        {notice && <p className={`notice-text notice-${notice.type}`}>{notice.text}</p>}
+      </div>
+
+      <div className="section">
         <h2>{editingId ? text.editApplication : text.addApplication}</h2>
         {errorKey && <p className="error-text">{text.errors[errorKey]}</p>}
 
@@ -569,6 +622,19 @@ function App() {
           </div>
 
           <div className="form-group">
+            <label htmlFor="deadline">{text.labels.deadline}</label>
+            <input
+              id="deadline"
+              inputMode="numeric"
+              pattern="\d{4}-\d{2}-\d{2}"
+              placeholder={text.placeholders.deadline}
+              value={deadline}
+              onChange={(event) => setDeadline(event.target.value)}
+            />
+            <span className="field-help">{text.help.deadline}</span>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="status">{text.labels.status}</label>
             <select
               id="status"
@@ -581,6 +647,16 @@ function App() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="form-group form-group-wide">
+            <label htmlFor="notes">{text.labels.notes}</label>
+            <textarea
+              id="notes"
+              placeholder={text.placeholders.notes}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+            />
           </div>
         </div>
 
@@ -636,7 +712,7 @@ function App() {
               value={sortOption}
               onChange={(event) => setSortOption(event.target.value as SortOption)}
             >
-              {(['Newest', 'Oldest', 'Company'] as SortOption[]).map((option) => (
+              {SORT_OPTIONS.map((option) => (
                 <option key={option} value={option}>
                   {text.sortOptions[option]}
                 </option>
@@ -652,6 +728,9 @@ function App() {
                 key={app.id}
                 app={app}
                 labels={{
+                  date: text.labels.date,
+                  deadline: text.labels.deadline,
+                  notes: text.labels.notes,
                   edit: text.edit,
                   delete: text.delete,
                   statuses: text.statuses,
