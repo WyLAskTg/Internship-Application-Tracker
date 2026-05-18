@@ -1,32 +1,45 @@
-import type { Application } from "./src"
+import type { Application } from './types'
 
 type ApplicationItemProps = {
   app: Application
   onDelete: (id: number) => void
+  onEdit: (app: Application) => void
 }
 
-function ApplicationItem({ app, onDelete }: ApplicationItemProps) {
+function ApplicationItem({ app, onDelete, onEdit }: ApplicationItemProps) {
   return (
-    <div className="application-item">
+    <article className="application-item">
       <div className="application-details">
-        <p><strong>Company:</strong> {app.company}</p>
-        <p><strong>Role:</strong> {app.role}</p>
-        <p><strong>Date Applied:</strong> {app.date}</p>
-        <p>
-          <strong>Status:</strong>{' '}
+        <div>
+          <h3>{app.company}</h3>
+          <p>{app.role}</p>
+        </div>
+
+        <div className="application-meta">
+          <span>{app.date}</span>
           <span className={`status-badge status-${app.status.toLowerCase().trim()}`}>
             {app.status}
           </span>
-        </p>
+        </div>
       </div>
 
-      <button
-        className="delete-button"
-        onClick={() => onDelete(app.id)}
-      >
-        Delete
-      </button>
-    </div>
+      <div className="item-actions">
+        <button
+          className="secondary-button"
+          onClick={() => onEdit(app)}
+          type="button"
+        >
+          Edit
+        </button>
+        <button
+          className="delete-button"
+          onClick={() => onDelete(app.id)}
+          type="button"
+        >
+          Delete
+        </button>
+      </div>
+    </article>
   )
 }
 
