@@ -4,6 +4,8 @@ A multilingual React + TypeScript app for tracking internship applications, inte
 
 Live demo: https://wylasktg.github.io/Internship-Application-Tracker/
 
+![Internship Application Tracker screenshot](docs/screenshot.png)
+
 ## Features
 
 - Add, edit, delete, search, filter, and sort internship applications
@@ -77,6 +79,12 @@ npm run lint
 ```
 
 ## CSV Format
+
+An example import file is available at:
+
+```text
+examples/applications.csv
+```
 
 CSV import supports these columns:
 
