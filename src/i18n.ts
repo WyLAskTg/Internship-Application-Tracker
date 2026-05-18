@@ -1,4 +1,10 @@
-import type { ApplicationStatus, Language, SortOption } from './types'
+import type {
+  ApplicationStatus,
+  DeadlineState,
+  FocusFilter,
+  Language,
+  SortOption,
+} from './types'
 
 export const LANGUAGE_OPTIONS: Language[] = ['en', 'zh', 'ja', 'fr']
 
@@ -22,6 +28,10 @@ export type Translation = {
   title: string
   subtitle: string
   total: string
+  activeApplications: string
+  interviewRate: string
+  offerRate: string
+  rejectionRate: string
   addApplication: string
   editApplication: string
   saveChanges: string
@@ -52,6 +62,7 @@ export type Translation = {
     status: string
     search: string
     filterStatus: string
+    focus: string
     sort: string
   }
   placeholders: {
@@ -69,7 +80,9 @@ export type Translation = {
   }
   all: string
   statuses: Record<ApplicationStatus, string>
+  focusOptions: Record<FocusFilter, string>
   sortOptions: Record<SortOption, string>
+  deadlineStates: Record<DeadlineState, string>
 }
 
 export const TRANSLATIONS: Record<Language, Translation> = {
@@ -84,6 +97,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     title: 'Internship Application Tracker',
     subtitle: 'Track applications, interviews, outcomes, and follow-ups.',
     total: 'Total',
+    activeApplications: 'Active',
+    interviewRate: 'Interview Rate',
+    offerRate: 'Offer Rate',
+    rejectionRate: 'Rejection Rate',
     addApplication: 'Add Application',
     editApplication: 'Edit Application',
     saveChanges: 'Save Changes',
@@ -121,6 +138,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       status: 'Status',
       search: 'Search',
       filterStatus: 'Filter by Status',
+      focus: 'Focus',
       sort: 'Sort',
     },
     placeholders: {
@@ -144,11 +162,23 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       Rejected: 'Rejected',
       Offer: 'Offer',
     },
+    focusOptions: {
+      All: 'All records',
+      Active: 'Active only',
+      Upcoming: 'Due in 7 days',
+      Overdue: 'Overdue',
+      MissingNotes: 'Missing notes',
+    },
     sortOptions: {
       Newest: 'Newest',
       Oldest: 'Oldest',
       Company: 'Company',
       Deadline: 'Deadline',
+    },
+    deadlineStates: {
+      future: 'Upcoming',
+      soon: 'Due soon',
+      overdue: 'Overdue',
     },
   },
   zh: {
@@ -162,6 +192,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     title: '实习申请追踪器',
     subtitle: '记录申请、面试、结果和后续事项。',
     total: '总计',
+    activeApplications: '进行中',
+    interviewRate: '面试率',
+    offerRate: '录用率',
+    rejectionRate: '拒绝率',
     addApplication: '添加申请',
     editApplication: '编辑申请',
     saveChanges: '保存修改',
@@ -197,6 +231,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       status: '状态',
       search: '搜索',
       filterStatus: '按状态筛选',
+      focus: '重点筛选',
       sort: '排序',
     },
     placeholders: {
@@ -220,11 +255,23 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       Rejected: '已拒绝',
       Offer: '录用',
     },
+    focusOptions: {
+      All: '全部记录',
+      Active: '只看进行中',
+      Upcoming: '7 天内截止',
+      Overdue: '已逾期',
+      MissingNotes: '缺少备注',
+    },
     sortOptions: {
       Newest: '最新',
       Oldest: '最早',
       Company: '公司',
       Deadline: '截止日期',
+    },
+    deadlineStates: {
+      future: '即将到来',
+      soon: '即将截止',
+      overdue: '已逾期',
     },
   },
   ja: {
@@ -238,6 +285,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     title: 'インターン応募トラッカー',
     subtitle: '応募、面接、結果、フォローアップを記録します。',
     total: '合計',
+    activeApplications: '進行中',
+    interviewRate: '面接率',
+    offerRate: '内定率',
+    rejectionRate: '不採用率',
     addApplication: '応募を追加',
     editApplication: '応募を編集',
     saveChanges: '変更を保存',
@@ -273,6 +324,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       status: 'ステータス',
       search: '検索',
       filterStatus: 'ステータスで絞り込み',
+      focus: '重点',
       sort: '並び替え',
     },
     placeholders: {
@@ -296,11 +348,23 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       Rejected: '不採用',
       Offer: '内定',
     },
+    focusOptions: {
+      All: 'すべての記録',
+      Active: '進行中のみ',
+      Upcoming: '7日以内の期限',
+      Overdue: '期限切れ',
+      MissingNotes: 'メモなし',
+    },
     sortOptions: {
       Newest: '新しい順',
       Oldest: '古い順',
       Company: '会社名',
       Deadline: '期限',
+    },
+    deadlineStates: {
+      future: '予定あり',
+      soon: '期限間近',
+      overdue: '期限切れ',
     },
   },
   fr: {
@@ -314,6 +378,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     title: 'Suivi des candidatures de stage',
     subtitle: 'Suivez vos candidatures, entretiens, résultats et relances.',
     total: 'Total',
+    activeApplications: 'Actives',
+    interviewRate: 'Taux d’entretien',
+    offerRate: 'Taux d’offre',
+    rejectionRate: 'Taux de refus',
     addApplication: 'Ajouter une candidature',
     editApplication: 'Modifier la candidature',
     saveChanges: 'Enregistrer',
@@ -351,6 +419,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       status: 'Statut',
       search: 'Recherche',
       filterStatus: 'Filtrer par statut',
+      focus: 'Vue ciblée',
       sort: 'Trier',
     },
     placeholders: {
@@ -374,11 +443,23 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       Rejected: 'Refus',
       Offer: 'Offre',
     },
+    focusOptions: {
+      All: 'Toutes',
+      Active: 'Actives seulement',
+      Upcoming: 'Échéance sous 7 jours',
+      Overdue: 'En retard',
+      MissingNotes: 'Sans notes',
+    },
     sortOptions: {
       Newest: 'Plus récentes',
       Oldest: 'Plus anciennes',
       Company: 'Entreprise',
       Deadline: 'Échéance',
+    },
+    deadlineStates: {
+      future: 'À venir',
+      soon: 'Bientôt',
+      overdue: 'En retard',
     },
   },
 }

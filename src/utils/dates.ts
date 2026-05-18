@@ -1,4 +1,8 @@
+import type { DeadlineState } from '../types'
+
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const SOON_WINDOW_DAYS = 7
+const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 export function getDateTime(date: string) {
   const time = new Date(date).getTime()
@@ -27,4 +31,33 @@ export function isValidDateInput(value: string) {
 
 export function isValidOptionalDateInput(value: string) {
   return !value.trim() || isValidDateInput(value.trim())
+}
+
+function getLocalDateStart(date: Date) {
+  const dateStart = new Date(date)
+  dateStart.setHours(0, 0, 0, 0)
+
+  return dateStart
+}
+
+export function getDeadlineState(deadline: string): DeadlineState | null {
+  if (!deadline) {
+    return null
+  }
+
+  const deadlineDate = getLocalDateStart(new Date(`${deadline}T00:00:00`))
+  const today = getLocalDateStart(new Date())
+  const dayDifference = Math.round(
+    (deadlineDate.getTime() - today.getTime()) / MS_PER_DAY,
+  )
+
+  if (dayDifference < 0) {
+    return 'overdue'
+  }
+
+  if (dayDifference <= SOON_WINDOW_DAYS) {
+    return 'soon'
+  }
+
+  return 'future'
 }

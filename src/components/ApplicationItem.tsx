@@ -1,4 +1,5 @@
-import type { Application, ApplicationStatus } from '../types'
+import type { Application, ApplicationStatus, DeadlineState } from '../types'
+import { getDeadlineState } from '../utils/dates'
 
 type ApplicationItemProps = {
   app: Application
@@ -11,6 +12,7 @@ type ApplicationItemProps = {
     edit: string
     delete: string
     statuses: Record<ApplicationStatus, string>
+    deadlineStates: Record<DeadlineState, string>
   }
 }
 
@@ -20,6 +22,8 @@ function ApplicationItem({
   onEdit,
   labels,
 }: ApplicationItemProps) {
+  const deadlineState = getDeadlineState(app.deadline)
+
   return (
     <article className="application-item">
       <div className="application-details">
@@ -32,9 +36,10 @@ function ApplicationItem({
           <span>
             {labels.date}: {app.date}
           </span>
-          {app.deadline && (
-            <span>
+          {app.deadline && deadlineState && (
+            <span className={`deadline-badge deadline-${deadlineState}`}>
               {labels.deadline}: {app.deadline}
+              <strong>{labels.deadlineStates[deadlineState]}</strong>
             </span>
           )}
           <span className={`status-badge status-${app.status.toLowerCase().trim()}`}>

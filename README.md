@@ -9,6 +9,9 @@ Live demo: https://wylasktg.github.io/Internship-Application-Tracker/
 - Add, edit, delete, search, filter, and sort internship applications
 - Track company, role, date applied, status, deadline / next step, and notes
 - View summary cards for total applications and each status
+- View active application count plus interview, offer, and rejection rates
+- Focus the list on active applications, upcoming deadlines, overdue items, or records missing notes
+- Highlight deadlines that are upcoming, due soon, or overdue
 - Switch between English, Chinese, Japanese, and French
 - Save application data locally with `localStorage`
 - Export applications to CSV for backup

@@ -1,8 +1,10 @@
 import type { Translation } from '../i18n'
 import {
   APPLICATION_STATUSES,
+  FOCUS_FILTERS,
   SORT_OPTIONS,
   type Application,
+  type FocusFilter,
   type SortOption,
   type StatusFilter,
 } from '../types'
@@ -10,12 +12,14 @@ import ApplicationItem from './ApplicationItem'
 
 type ApplicationListProps = {
   applications: Application[]
+  focusFilter: FocusFilter
   filterStatus: StatusFilter
   searchTerm: string
   sortOption: SortOption
   text: Translation
   onDelete: (id: number) => void
   onEdit: (app: Application) => void
+  onFocusFilterChange: (filter: FocusFilter) => void
   onFilterStatusChange: (status: StatusFilter) => void
   onSearchTermChange: (value: string) => void
   onSortOptionChange: (option: SortOption) => void
@@ -23,12 +27,14 @@ type ApplicationListProps = {
 
 function ApplicationList({
   applications,
+  focusFilter,
   filterStatus,
   searchTerm,
   sortOption,
   text,
   onDelete,
   onEdit,
+  onFocusFilterChange,
   onFilterStatusChange,
   onSearchTermChange,
   onSortOptionChange,
@@ -68,6 +74,21 @@ function ApplicationList({
         </div>
 
         <div className="form-group">
+          <label htmlFor="focus-filter">{text.labels.focus}</label>
+          <select
+            id="focus-filter"
+            value={focusFilter}
+            onChange={(event) => onFocusFilterChange(event.target.value as FocusFilter)}
+          >
+            {FOCUS_FILTERS.map((filter) => (
+              <option key={filter} value={filter}>
+                {text.focusOptions[filter]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
           <label htmlFor="sort">{text.labels.sort}</label>
           <select
             id="sort"
@@ -96,6 +117,7 @@ function ApplicationList({
                 edit: text.edit,
                 delete: text.delete,
                 statuses: text.statuses,
+                deadlineStates: text.deadlineStates,
               }}
               onDelete={onDelete}
               onEdit={onEdit}

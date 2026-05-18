@@ -15,7 +15,9 @@ import {
   APPLICATION_STATUSES,
   type Application,
   type ApplicationStatus,
+  type FocusFilter,
   type Language,
+  type SummaryMetric,
   type SortOption,
   type StatusFilter,
 } from './types'
@@ -23,6 +25,7 @@ import { buildCsv, parseApplicationsFromCsv } from './utils/csv'
 import {
   getDateTime,
   getDeadlineTime,
+  getDeadlineState,
   isValidDateInput,
   isValidOptionalDateInput,
 } from './utils/dates'
@@ -32,6 +35,38 @@ import {
   loadStoredApplications,
   loadStoredLanguage,
 } from './utils/storage'
+
+const ACTIVE_STATUSES: ApplicationStatus[] = ['Applied', 'OA', 'Interview']
+
+function isActiveStatus(status: ApplicationStatus) {
+  return ACTIVE_STATUSES.includes(status)
+}
+
+function formatRate(count: number, total: number) {
+  return total ? `${Math.round((count / total) * 100)}%` : '0%'
+}
+
+function matchesFocusFilter(app: Application, focusFilter: FocusFilter) {
+  const deadlineState = getDeadlineState(app.deadline)
+
+  if (focusFilter === 'Active') {
+    return isActiveStatus(app.status)
+  }
+
+  if (focusFilter === 'Upcoming') {
+    return deadlineState === 'soon'
+  }
+
+  if (focusFilter === 'Overdue') {
+    return deadlineState === 'overdue'
+  }
+
+  if (focusFilter === 'MissingNotes') {
+    return !app.notes.trim()
+  }
+
+  return true
+}
 
 function App() {
   const [language, setLanguage] = useState<Language>(loadStoredLanguage)
@@ -46,6 +81,7 @@ function App() {
   const [errorKey, setErrorKey] = useState<FormError>('')
   const [notice, setNotice] = useState<Notice | null>(null)
   const [filterStatus, setFilterStatus] = useState<StatusFilter>('All')
+  const [focusFilter, setFocusFilter] = useState<FocusFilter>('All')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortOption, setSortOption] = useState<SortOption>('Newest')
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -202,6 +238,28 @@ function App() {
     label: applicationStatus,
     count: applications.filter((app) => app.status === applicationStatus).length,
   }))
+  const activeCount = applications.filter((app) => isActiveStatus(app.status)).length
+  const interviewCount = applications.filter((app) => app.status === 'Interview').length
+  const offerCount = applications.filter((app) => app.status === 'Offer').length
+  const rejectionCount = applications.filter((app) => app.status === 'Rejected').length
+  const metrics: SummaryMetric[] = [
+    {
+      label: text.activeApplications,
+      value: activeCount,
+    },
+    {
+      label: text.interviewRate,
+      value: formatRate(interviewCount, totalCount),
+    },
+    {
+      label: text.offerRate,
+      value: formatRate(offerCount, totalCount),
+    },
+    {
+      label: text.rejectionRate,
+      value: formatRate(rejectionCount, totalCount),
+    },
+  ]
 
   const filteredApplications = useMemo(() => {
     const normalizedSearchTerm = searchTerm.trim().toLowerCase()
@@ -214,8 +272,9 @@ function App() {
           app.company.toLowerCase().includes(normalizedSearchTerm) ||
           app.role.toLowerCase().includes(normalizedSearchTerm) ||
           app.notes.toLowerCase().includes(normalizedSearchTerm)
+        const matchesFocus = matchesFocusFilter(app, focusFilter)
 
-        return matchesStatus && matchesSearch
+        return matchesStatus && matchesSearch && matchesFocus
       })
       .sort((a, b) => {
         if (sortOption === 'Company') {
@@ -230,7 +289,7 @@ function App() {
 
         return sortOption === 'Oldest' ? dateDifference : -dateDifference
       })
-  }, [applications, filterStatus, searchTerm, sortOption])
+  }, [applications, filterStatus, focusFilter, searchTerm, sortOption])
 
   return (
     <div className="app-container" lang={HTML_LANG[language]}>
@@ -241,6 +300,7 @@ function App() {
       />
 
       <SummaryCards
+        metrics={metrics}
         statusCounts={statusCounts}
         text={text}
         totalCount={totalCount}
@@ -276,12 +336,14 @@ function App() {
 
       <ApplicationList
         applications={filteredApplications}
+        focusFilter={focusFilter}
         filterStatus={filterStatus}
         searchTerm={searchTerm}
         sortOption={sortOption}
         text={text}
         onDelete={handleDeleteApplication}
         onEdit={handleEditApplication}
+        onFocusFilterChange={setFocusFilter}
         onFilterStatusChange={setFilterStatus}
         onSearchTermChange={setSearchTerm}
         onSortOptionChange={setSortOption}
