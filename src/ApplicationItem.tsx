@@ -1,12 +1,22 @@
-import type { Application } from './types'
+import type { Application, ApplicationStatus } from './types'
 
 type ApplicationItemProps = {
   app: Application
   onDelete: (id: number) => void
   onEdit: (app: Application) => void
+  labels: {
+    edit: string
+    delete: string
+    statuses: Record<ApplicationStatus, string>
+  }
 }
 
-function ApplicationItem({ app, onDelete, onEdit }: ApplicationItemProps) {
+function ApplicationItem({
+  app,
+  onDelete,
+  onEdit,
+  labels,
+}: ApplicationItemProps) {
   return (
     <article className="application-item">
       <div className="application-details">
@@ -18,7 +28,7 @@ function ApplicationItem({ app, onDelete, onEdit }: ApplicationItemProps) {
         <div className="application-meta">
           <span>{app.date}</span>
           <span className={`status-badge status-${app.status.toLowerCase().trim()}`}>
-            {app.status}
+            {labels.statuses[app.status]}
           </span>
         </div>
       </div>
@@ -29,14 +39,14 @@ function ApplicationItem({ app, onDelete, onEdit }: ApplicationItemProps) {
           onClick={() => onEdit(app)}
           type="button"
         >
-          Edit
+          {labels.edit}
         </button>
         <button
           className="delete-button"
           onClick={() => onDelete(app.id)}
           type="button"
         >
-          Delete
+          {labels.delete}
         </button>
       </div>
     </article>

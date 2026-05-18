@@ -12,6 +12,8 @@ export type StatusFilter = ApplicationStatus | 'All'
 
 export type SortOption = 'Newest' | 'Oldest' | 'Company'
 
+export type Language = 'en' | 'zh' | 'ja' | 'fr'
+
 export type Application = {
   id: number
   company: string
