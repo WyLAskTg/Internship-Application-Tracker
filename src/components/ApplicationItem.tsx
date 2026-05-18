@@ -1,4 +1,4 @@
-import type { Application, ApplicationStatus } from './types'
+import type { Application, ApplicationStatus } from '../types'
 
 type ApplicationItemProps = {
   app: Application

@@ -16,7 +16,7 @@ export type Notice = {
   text: string
 }
 
-type Translation = {
+export type Translation = {
   language: string
   languages: Record<Language, string>
   title: string
